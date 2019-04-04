@@ -1,0 +1,16 @@
+C:\Users\CYS-0690\source\repos\Study\Test1\bin\Debug\Test1.exe.config
+C:\Users\CYS-0690\source\repos\Study\Test1\bin\Debug\Test1.exe
+C:\Users\CYS-0690\source\repos\Study\Test1\bin\Debug\Test1.pdb
+C:\Users\CYS-0690\source\repos\Study\Test1\bin\Debug\EntityFramework.dll
+C:\Users\CYS-0690\source\repos\Study\Test1\bin\Debug\EntityFramework.SqlServer.dll
+C:\Users\CYS-0690\source\repos\Study\Test1\bin\Debug\EntityFramework.xml
+C:\Users\CYS-0690\source\repos\Study\Test1\bin\Debug\EntityFramework.SqlServer.xml
+C:\Users\CYS-0690\source\repos\Study\Test1\bin\Debug\ko\EntityFramework.resources.dll
+C:\Users\CYS-0690\source\repos\Study\Test1\obj\Debug\Test1.csprojAssemblyReference.cache
+C:\Users\CYS-0690\source\repos\Study\Test1\obj\Debug\Test1.csproj.CoreCompileInputs.cache
+C:\Users\CYS-0690\source\repos\Study\Test1\obj\Debug\Test1.csproj.CopyComplete
+C:\Users\CYS-0690\source\repos\Study\Test1\obj\Debug\Test1.exe
+C:\Users\CYS-0690\source\repos\Study\Test1\obj\Debug\Test1.pdb
+C:\Users\CYS-0690\source\repos\Study\Test1\obj\Debug\Test1.Migrations.InitialCreate.resources
+C:\Users\CYS-0690\source\repos\Study\Test1\obj\Debug\Test1.csproj.GenerateResource.cache
+C:\Users\CYS-0690\source\repos\Study\Test1\obj\Debug\Test1.Migrations.AddComment.resources
