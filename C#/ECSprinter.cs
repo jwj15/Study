@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Study
 {
-    class Class15
+    class ECSprinter
     {
         static void Main()
         {
