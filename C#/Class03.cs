@@ -31,13 +31,25 @@ namespace TEST
             s4.Replace("haha", "hhhhh"); // 문자 변경 haha를 hhhhh로 변경 hello!, hhhhh
             WriteLine(s4);
 
+            // 파라미터 초기값 예제
             StopService(true); // true null 1 출력
             StopService(false, "aaa"); // false aaa 1 출력
             // StopService(true, 2); 오류 
             StopService(true, serviceId: 5); //해당 파라미터 명을 지정하여 값을 줄 수 있다. true null 5 출력
 
+            // out 파라미터 예제
             IsOnline("abab", out string t);// or string t; IsOnline("", out t);
             WriteLine(t);// out Test 출력
+            GetXY(out int x, out int y);
+
+            // 여기서 x, y 를 사용할 수 있다.
+            Console.WriteLine($"{x},{y}");
+
+            // out var 를 사용한 표현
+            GetXY(out var x1, out var y1);
+
+            // 필요없는 out 파라미터에 _ 사용
+            GetXY(out var x2, out _);
 
             //ref test
             int num2 = 5;
@@ -69,6 +81,13 @@ namespace TEST
             message = "out Test"; // out으로 지정한 값 리턴
             return true;
         }
+        static void GetXY(out int x, out int y)
+        {
+            x = 1;
+            y = 2;
+        }
+        
+
 
         // ref
         // ref를 붙일 경우 reference(값을 주소)를 받는다.

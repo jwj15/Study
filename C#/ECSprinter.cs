@@ -19,7 +19,7 @@ namespace Study
             {
                 Console.WriteLine(a);
             }
-            
+
             SerialPort port = new SerialPort();
 
             if (port.IsOpen)
@@ -27,7 +27,8 @@ namespace Study
                 port.Close();
             }
             port.Encoding = Encoding.GetEncoding("ks_c_5601-1987");
-            port.PortName = "COM1";
+            port.PortName = "COM2";
+            Console.WriteLine(port.IsOpen);
             port.BaudRate = (int)9600;
             port.DataBits = (int)8;
             port.Parity = Parity.None;
@@ -42,9 +43,9 @@ namespace Study
             Console.WriteLine(port.IsOpen);
 
             //port.Write("f");
-            port.Write("B");
-            port.Write("AUTOFR");
-            port.Write("PA");
+            //port.Write("B");
+            //port.Write("AUTOFR");
+            //port.Write("PA");
             //port.WriteLine(Command.ETX);
             //port.WriteLine("TestPrint1");
             //port.WriteLine("TestPrint2");
@@ -52,7 +53,7 @@ namespace Study
             //port.WriteLine("TestPrint4");
             //port.WriteLine("TestPrint5");
 
-            //port.WriteLine(Command.Cut);
+            port.WriteLine(Command.Cut);
             port.Close();
 
 

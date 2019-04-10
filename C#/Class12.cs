@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Study
 {
-    class Class13
+    class Class12
     {
         // 네트워크
 

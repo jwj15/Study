@@ -1,0 +1,32 @@
+﻿<Page x:Class="WPF.Page2"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:WPF"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="Page2">
+
+    <Grid Background="{Binding Text, ElementName=color}">
+        <StackPanel>
+            <Slider Maximum="100" Value="10" x:Name="slider" />
+            <ProgressBar Value="{Binding Value, ElementName=slider}" />
+            <TextBox Text="{Binding Value, ElementName=slider}" />
+            <TextBox Text="Yellow" x:Name="color" />
+            <ListBox Height="200" ItemsSource="{Binding}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel>
+                            <TextBlock Text="{Binding speed}" />
+                            <TextBlock Text="{Binding type}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <Label Content="{StaticResource button}" Background="{StaticResource accentBrush}"/>
+        </StackPanel>
+        
+        
+    </Grid>
+</Page>
