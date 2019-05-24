@@ -20,7 +20,7 @@ namespace Study
         public void Dispose()
         {
             this.Dispose(true);
-            GC.SuppressFinalize(this); // 인스턴스 강제적 제거
+            GC.SuppressFinalize(this); //finalizer 호출 회피
         }
 
         protected virtual void Dispose(bool isDisposing)
