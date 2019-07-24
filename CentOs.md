@@ -98,7 +98,7 @@
 > rpm -qlp 패키지이름.rpm -- 패키지파일 안에 포함된 파일 확인  
 > rpm -qip 패키지이름.rpm -- 패키지 파일 상세정보  
   
-`**` yum은 rpm 명령의 의존성 문제를 해결  
+**\* yum은 rpm 명령의 의존성 문제를 해결**  
 > yum -y install 패키지이름 -- 패키지 설치 -y옵션은 질의시 무조건 yes  
 > yum localinstall rmp파일.rpm -- 의존성 파일은 인터넷에서 알아서 받음(rpm 대신 쓰자)  
 > yum check-update -- 업데이트 가능 패키지 출력  
@@ -109,7 +109,7 @@
 
 ### 웹서버/php/db 설치
 
-`**` php 7.2 설치 세팅
+**\* php 7.2 설치 세팅**  
 > wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm  
 > rpm -Uvh epel-release-latest-7.noarch.rpm  
 > wget http://rpms.remirepo.net/enterprise/remi-release-7.rpm  
@@ -126,7 +126,7 @@
 > systemctl disable 서비스이름 // 서비스 자동시작 삭제  
 
 ### 아파치 php연동
-`**` vi /etc/httpd/conf/httpd.conf  
+**\* vi /etc/httpd/conf/httpd.conf**  
 > \<IfModule mime_module>  
 > 하위에  
 > AddType application/x-httpd-php .html .htm .php .inc  
@@ -145,7 +145,7 @@
 > firewall-cmd --premanent --new-zone=webserver // 새로운 존생성  
 > firewall-cmd --set-default-zone=webserver // webserver존 활성화  
 
-`**` 위 명령에서 해당 존에 설정을 컨트롤 하려면 permanent 이후에 --zone=public 와 같이 붙여준다(public존)  
+**\* 위 명령에서 해당 존에 설정을 컨트롤 하려면 permanent 이후에 --zone=public 와 같이 붙여준다(public존)**  
 > firewall-cmd --list-services --zone=public  -- 리스트 보기
 
 ### jdk11 설치
@@ -166,7 +166,7 @@
 > sudo groupadd tomcat  
 > sudo chown -R tomcat:tomcat tomcat  
 
-`**` 권한설정 제대로 안되면 서비스 실행 안됨  
+**\* 권한설정 제대로 안되면 서비스 실행 안됨**  
 > 톰캣폴더/conf/server.xml 파일 수정 -> port 및 인코딩 설정  
 > port="9000" URIEncoding="UTF-8" 추가  
 > 톰캣 실행 오류시 보통 server.xml 실수가 많음  
@@ -175,7 +175,7 @@
 > sudo firewall-cmd --reload  
 
 ### 서비스 자동실행 등록
-`**` sudo vi /etc/systemd/system/tomcat.service
+**\* sudo vi /etc/systemd/system/tomcat.service**
 
 -------------------------------------------------------------
 
@@ -206,7 +206,7 @@
 -----------------------------------------------------------
 
 ### user role 추가
-`**` vi conf/tomcat-users.xml
+**\* vi conf/tomcat-users.xml**
 
 -----------------------------------------------------------
 > \<role rolename="manager-gui"/>  
@@ -226,7 +226,7 @@
 > sudo systemctl start tomcat  
 
 ### 마리아디비 설치
-`**` vi /etc/yum.repos.d/MariaDB.repo
+**\* vi /etc/yum.repos.d/MariaDB.repo**
 
 ------------------------------------------------------
 
@@ -238,10 +238,10 @@
 
 ------------------------------------------------------
 
-`**` 저장 후 설치  
+**\* 저장 후 설치**  
 sudo yum install MariaDB-server MariaDB-client
 
-`**` 설치후
+**\* 설치후**
 vi /etc/my.cnf
 
 ------------------------------------------------------
@@ -263,7 +263,7 @@ vi /etc/my.cnf
 
 ---------------------------------------
 
-`**` 저장후
+**\* 저장후**
 
 > sudo systemctl enable mariadb  
 > sudo systemctl start mariadb  
@@ -273,7 +273,7 @@ vi /etc/my.cnf
 > mysql_upgrade -u root // 아래 명령 실행시 db존재하지 않느다는 오류시 사용  
 > sudo mysql_secure_installation // 보안설정 암호외에 전부다 엔터  
 
-`**` 계정생성
+**\* 계정생성**
 > create user '아이디'@'%' identified by '비밀번호';  
 > grant all privileges on *.* to '아이디'@'%';  
 > flush privileges;  
