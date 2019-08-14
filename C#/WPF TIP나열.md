@@ -16,7 +16,7 @@ ResizeMode="NoResize" -> 크기 재설정 불가
 `Closed += (o, e) => { DataContext = null; };`
 ### Style/BasedOn
 - Style을 설정할때 기존값을 불러오려면 BasedOn태그에 소스를 설정.  
-  적용되있는 값을 그대로 가져오려면 {X:Type Button}처럼 불러온다.
+  적용되있는 값을 그대로 가져오려면 {StaticResource {x:Type Button}}처럼 불러온다.
 ###  RelativeSource
 - Binding할때 소스의 위치를 상대적으로 설정할경우 사용  
 - 부모요소의 값 가져오기  
@@ -28,5 +28,8 @@ TemplateBinding이 더 가볍지만 TwoWay지원X, Freezable클래스 속성(bru
 `{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}, Path=Tag}`  
 - 두단계 위에 해당 타입의 소스 바인딩  
 `{Binding RelativeSource={RelativeSource AncestorType={x:Type StackPanel}, AncestorLevel=2}, Path=Orientation}`
-  
-  
+### 줄바꿈
+- &#10 또는 &#xA 사용
+### foreach 문제
+- 컬렉션에 foreach사용 할 경우 수정,삭제 시 오류 발생  
+이런 경우 for문을 사용하면 된다.

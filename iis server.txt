@@ -1,0 +1,15 @@
+netsh http add urlacl url=http://*:9999/ user=everyone
+
+applicationhost.config 파일 수정
+<system.applicationHost>
+    <sites>
+        <site>
+            <bindings>
+                    <binding protocol="http" bindingInformation="*:9999:localhost" />    ---------->> localhost삭제 또는  *
+                </bindings>
+
+### ip listen 못할때
+
+netsh http show iplisten   --> 확인
+netsh http add iplisten ipaddress=192.168.0.106    --> 등록
+iireset
