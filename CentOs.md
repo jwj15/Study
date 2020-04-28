@@ -47,6 +47,27 @@
 >vncpasswd // 패스워드 변경  
 >방화벽 포트 열어주고 5901~5903정도 열어줌 (서비스 vnc-server선택함)  
 >클라이언트에 vncviewer설치후 아이피:포트로접속  
+```
+7.7이후 서비스설정
+[Unit]
+
+Description=Remote desktop service (VNC)
+After=syslog.target network.target
+
+[Service]
+Type=forking
+User=<USER>
+WorkingDirectory=/home/<USER>
+
+# Clean any existing files in /tmp/.X11-unix environment
+ExecStartPre=/bin/sh -c '/usr/bin/vncserver -kill %i > /dev/null 2>&1 || :'
+ExecStart=/usr/bin/vncserver %i -geometry 1600x900
+PIDFile=/home/<USER>/.vnc/%H%i.pid
+ExecStop=/bin/sh -c '/usr/bin/vncserver -kill %i > /dev/null 2>&1 || :'
+
+[Install]
+WantedBy=multi-user.target
+```
 
 ### name server 추가
 >vi /etc/resolv.conf  
@@ -277,3 +298,36 @@ vi /etc/my.cnf
 > create user '아이디'@'%' identified by '비밀번호';  
 > grant all privileges on *.* to '아이디'@'%';  
 > flush privileges;  
+
+### PowerOff Button으로 전원오프
+>sudo yum install acpid
+>vi /etc/systemd/logind.conf  해당 내용 주석 제거후 재시작
+
+### DB 백업 스케줄
+>sudo vi /usr/local/bin/dbbackup.sh 스크립트 파일 생성 
+```
+#!/bin/bash
+
+# 변수선언
+DATE=$(date +"%Y%m%d")
+BACKUP_DIR=~/dbbackup
+
+# 3달 전 백업 삭제
+find  $BACKUP_DIR/ -mtime +90 -name '*.sql' -exec rm {} \;
+
+# 백업 진행
+mysqldump -u 사용자 -p비번 databse명 > $BACKUP_DIR/db_$now.sql
+```
+>chmod 755 /usr/local/bin/dbbackup.sh 권한변경
+>crontab -l  ---->  00 12 * * * /usr/local/bin/dbbackup.sh 저장, 12시마다 스크립트 실행
+>권한없는 폴더로 설정시 문제발생 미리 테스트 후 등록
+
+### 새 하드웨어 추가
+>sudo fdisk -l 디스크 리스트 확인
+>sudo fdisk /dev/sd* sda sdb등 리스트에서 확인 후 해당 디스크 입력
+>파티션 설정 후 sudo mkfs.xfs 혹은 mkfs.ext4 /dev/sd*1 (sdb1 sdb2 등) 포맷
+>sudo blkid에서 uuid 확인 및 복사
+>sudo vi /etc/fstab
+>UUID=UUID실제값 마운트디렉토리 파티션 포맷 defaults 0 0
+>예시 UUID=w123412938472037423 /sub_hard xfs defaults 0 0
+>x-window에서 유틸리티->디스크에서 설정가능
