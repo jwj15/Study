@@ -1,3 +1,8 @@
+### censos8 한글입력
+>관리자 접속
+>yum install ibus-hangul
+>재시작후 한국어(Hangul)로 입력소스 교체
+
 ### selinux 해제
 >sudo gedit /etc/sysconfig/selinux (gedit <-> vi)  
 >SELINUX=enforcing ==> disabled 로 수정후 재부팅
@@ -33,7 +38,7 @@
 >DNS1="168.126.63.1"  
 >DNS2="168.126.63.2"  
 
-### vnc server 추가  
+### vnc server 추가  (centos8 현재 service(inactive)오류 실행은 됨)
 >yum install tigervnc-server  
 >cp /lib/systemd/system/vncserver@.service /etc/systemd/system/vncserver@:1.service  
 >vi /etc/systemd/system/vncserver@:1.service  
@@ -56,13 +61,10 @@ After=syslog.target network.target
 
 [Service]
 Type=forking
-User=<USER>
-WorkingDirectory=/home/<USER>
 
 # Clean any existing files in /tmp/.X11-unix environment
 ExecStartPre=/bin/sh -c '/usr/bin/vncserver -kill %i > /dev/null 2>&1 || :'
-ExecStart=/usr/bin/vncserver %i -geometry 1600x900
-PIDFile=/home/<USER>/.vnc/%H%i.pid
+ExecStart=/usr/sbin/runuser -l jjang -c "/usr/bin/vncserver %i -geometry 1600x900"
 ExecStop=/bin/sh -c '/usr/bin/vncserver -kill %i > /dev/null 2>&1 || :'
 
 [Install]
@@ -145,6 +147,7 @@ WantedBy=multi-user.target
 > systemctl start mariadb -- db 시작  
 > systemctl status httpd -- 서비스 상태 확인  
 > systemctl disable 서비스이름 // 서비스 자동시작 삭제  
+> systemctl list-units --type=service // 서비스 목록 보기
 
 ### 아파치 php연동
 **\* vi /etc/httpd/conf/httpd.conf**  
@@ -176,7 +179,7 @@ WantedBy=multi-user.target
 > which java // 자바위치  
 > readlink -f 자바위치 // 실제경로  
 > vi /etc/profile  
-> export JAVA_HOME=/usr/lib/jvm/java-11-amazon-corretto 입력 후 저장  
+> Export JAVA_HOME=/usr/lib/jvm/java-11-amazon-corretto 입력 후 저장  
 
 ### 톰캣9 설치
 > 이것 역시 톰캣사이트에서 tar.gz파일 받음  
@@ -211,13 +214,12 @@ WantedBy=multi-user.target
 > Environment=JAVA_HOME=/usr/lib/jvm/java-11-amazon-corretto  
 > Environment=CATALINA_HOME=/opt/tomcat  
 > Environment=CATALINA_BASE=/opt/tomcat  
->   
-> ExecStart=/opt/tomcat/bin/startup.sh  
-> ExecStop=/opt/tomcat/bin/shutdown.sh  
+> Environment=CATALINA_PID=/opt/tomcat/temp/tomcat.pid  
+> ExecStart=/opt/tomcat/bin/catalina.sh start   
+> ExecStop=/opt/tomcat/bin/catalina.sh stop 
 >   
 > User=tomcat  
 > Group=tomcat  
-> WMask=0007  
 > RestartSec=10  
 > Restart=always  
 >   
@@ -253,9 +255,10 @@ WantedBy=multi-user.target
 
 > [mariadb]  
 > name = MariaDB  
-> baseurl = http://yum.mariadb.org/10.4/contos7-amd64  
-> gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB  
-> gpgcheck=1  
+> baseurl = http://yum.mariadb.org/10.4/centos8-amd64   
+> module_hotfixes = 1   
+> gpgkey = https://yum.mariadb.org/RPM-GPG-KEY-MariaDB  
+> gpgcheck = 1  
 
 ------------------------------------------------------
 
@@ -316,10 +319,11 @@ BACKUP_DIR=~/dbbackup
 find  $BACKUP_DIR/ -mtime +90 -name '*.sql' -exec rm {} \;
 
 # 백업 진행
-mysqldump -u 사용자 -p비번 databse명 > $BACKUP_DIR/db_$now.sql
+mysqldump -u 사용자 -p비번 databse명 > $BACKUP_DIR/db_$DATE.sql
 ```
 >chmod 755 /usr/local/bin/dbbackup.sh 권한변경
->crontab -l  ---->  00 12 * * * /usr/local/bin/dbbackup.sh 저장, 12시마다 스크립트 실행
+>crontab -e  ---->  00 12 * * * /usr/local/bin/dbbackup.sh 저장, 12시마다 스크립트 실행
+>crontab -l 리스트보기
 >권한없는 폴더로 설정시 문제발생 미리 테스트 후 등록
 
 ### 새 하드웨어 추가
@@ -331,3 +335,12 @@ mysqldump -u 사용자 -p비번 databse명 > $BACKUP_DIR/db_$now.sql
 >UUID=UUID실제값 마운트디렉토리 파티션 포맷 defaults 0 0
 >예시 UUID=w123412938472037423 /sub_hard xfs defaults 0 0
 >x-window에서 유틸리티->디스크에서 설정가능
+
+### centos8 시간동기화
+>yum install chrony 이미 설치되있을꺼임
+>vi /etc/chrony.conf -> 서버풀변경 ntppool.org/zone/kr에서 확인
+>sudo systemctl start chronyd
+>sudo systemctl enable chronyd
+>timedatectl set-ntp yes -> 싱크활성화
+>timedatectl status -> 동기화 확인
+>chronyc sources -> 기준서버 확인
