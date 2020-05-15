@@ -33,12 +33,12 @@
 ### 고정아이피 등록 
 >vi /etc/sysconfig/network-scripts/ifcfg-eth0 // 뒤에 이름은 다를수 있다  
 >BOOTPROTO="static"  
->IPADDR="192.168.0.150"  
+>IPADDR="192.168.0.205"  
 >GATEWAY="192.168.0.1"  
 >DNS1="168.126.63.1"  
 >DNS2="168.126.63.2"  
 
-### vnc server 추가  (centos8 현재 service(inactive)오류 실행은 됨)
+### vnc server 추가
 >yum install tigervnc-server  
 >cp /lib/systemd/system/vncserver@.service /etc/systemd/system/vncserver@:1.service  
 >vi /etc/systemd/system/vncserver@:1.service  
@@ -46,10 +46,10 @@
 >ExecStart=/usr/sbin/runuser -l \<user> -c "/usr/bin/vncserver %i"  
 >PIDFile=/home/\<user>/.vnc/%H%i.pid  
 
->systemctl daemon-reload // 설정파일 재시작  
->systemctl enable vncserver@:1.service // 서비스 활성화  
->vncserver // 서비스 시작 첫 시작시 접속할 비번입력  
 >vncpasswd // 패스워드 변경  
+>systemctl daemon-reload // 설정파일 재시작  
+>systemctl enable vncserver@:1 // 서비스 활성화  
+>vncserver // 서비스 시작 첫 시작시 접속할 비번입력  
 >방화벽 포트 열어주고 5901~5903정도 열어줌 (서비스 vnc-server선택함)  
 >클라이언트에 vncviewer설치후 아이피:포트로접속  
 ```
@@ -60,11 +60,11 @@ Description=Remote desktop service (VNC)
 After=syslog.target network.target
 
 [Service]
-Type=forking
+Type=simple
 
 # Clean any existing files in /tmp/.X11-unix environment
 ExecStartPre=/bin/sh -c '/usr/bin/vncserver -kill %i > /dev/null 2>&1 || :'
-ExecStart=/usr/sbin/runuser -l jjang -c "/usr/bin/vncserver %i -geometry 1600x900"
+ExecStart=/usr/bin/vncserver_wrapper jjang %i -geometry 1600x900
 ExecStop=/bin/sh -c '/usr/bin/vncserver -kill %i > /dev/null 2>&1 || :'
 
 [Install]
@@ -166,8 +166,10 @@ WantedBy=multi-user.target
 > firewall-cmd --permanent --add-port=4000-4100/tcp // 포트 범위 추가  
 > firewall-cmd --permanent --remove-port=8080/tcp // 포트 삭제  
 > firewall-cmd --permanent --add-source=192.168.1.0/24 --add-port=22/tcp // 192.168.1 ~ 대역에서 ssh접근허용  
-> firewall-cmd --premanent --new-zone=webserver // 새로운 존생성  
+> firewall-cmd --permanent --new-zone=webserver // 새로운 존생성  
 > firewall-cmd --set-default-zone=webserver // webserver존 활성화  
+> firewall-cmd --permanent --add-forward-port=port=80:proto=tcp:toport=9000 // 포트포워딩
+> 설정파일 /etc/firewalld/znoes/public.xml
 
 **\* 위 명령에서 해당 존에 설정을 컨트롤 하려면 permanent 이후에 --zone=public 와 같이 붙여준다(public존)**  
 > firewall-cmd --list-services --zone=public  -- 리스트 보기
@@ -179,7 +181,7 @@ WantedBy=multi-user.target
 > which java // 자바위치  
 > readlink -f 자바위치 // 실제경로  
 > vi /etc/profile  
-> Export JAVA_HOME=/usr/lib/jvm/java-11-amazon-corretto 입력 후 저장  
+> export JAVA_HOME=/usr/lib/jvm/java-11-amazon-corretto 입력 후 저장  
 
 ### 톰캣9 설치
 > 이것 역시 톰캣사이트에서 tar.gz파일 받음  
@@ -188,13 +190,14 @@ WantedBy=multi-user.target
 > cd /opt; mv 풀린폴더 tomcat  
 > sudo useradd tomcat  
 > sudo groupadd tomcat  
-> sudo chown -R tomcat:tomcat tomcat  
+> sudo chown -R tomcat:tomcat /opt/tomcat  
 
 **\* 권한설정 제대로 안되면 서비스 실행 안됨**  
 > 톰캣폴더/conf/server.xml 파일 수정 -> port 및 인코딩 설정  
 > port="9000" URIEncoding="UTF-8" 추가  
 > 톰캣 실행 오류시 보통 server.xml 실수가 많음  
 > "나 태그< />확인!!   
+> web.xml에서 세션시간 세팅
 > sudo firewall-cmd --permanent --zone=public --add-port=9000/tcp  
 > sudo firewall-cmd --reload  
 
@@ -206,7 +209,7 @@ WantedBy=multi-user.target
 > \# Systemd unit file for tomcat  
 > [Unit]  
 > Description=Apache Tomcat Web Application Container  
-> After=syslog.target  
+> After=syslog.target network.target    
 >   
 > [Service]  
 > Type=forking  
@@ -215,8 +218,8 @@ WantedBy=multi-user.target
 > Environment=CATALINA_HOME=/opt/tomcat  
 > Environment=CATALINA_BASE=/opt/tomcat  
 > Environment=CATALINA_PID=/opt/tomcat/temp/tomcat.pid  
-> ExecStart=/opt/tomcat/bin/catalina.sh start   
-> ExecStop=/opt/tomcat/bin/catalina.sh stop 
+> ExecStart=/opt/tomcat/bin/startup.sh  
+> ExecStop=/opt/tomcat/bin/shutdown.sh  
 >   
 > User=tomcat  
 > Group=tomcat  
@@ -224,7 +227,7 @@ WantedBy=multi-user.target
 > Restart=always  
 >   
 > [Install]  
-> WantedBy=multi.user.target  
+> WantedBy=multi-user.target  
 
 -----------------------------------------------------------
 
@@ -267,25 +270,8 @@ sudo yum install MariaDB-server MariaDB-client
 
 **\* 설치후**
 vi /etc/my.cnf
+설정 생략
 
-------------------------------------------------------
-
-> [mysqld]  
-> init_connect="SET collation_connection = utf8_general_ci"    
-> init_connect="SET NAMES utf8"   
-> character-set-server = utf8  
-> collation-server = utf8_general_ci  
->   
-> [client]  
-> default-character-set = utf8  
->   
-> [mysqldump]  
-> default-character-set = utf8  
->   
-> [mysql]  
-> default-character-set = utf8  
-
----------------------------------------
 
 **\* 저장후**
 
@@ -336,7 +322,7 @@ mysqldump -u 사용자 -p비번 databse명 > $BACKUP_DIR/db_$DATE.sql
 >예시 UUID=w123412938472037423 /sub_hard xfs defaults 0 0
 >x-window에서 유틸리티->디스크에서 설정가능
 
-### centos8 시간동기화
+### centos8 시간동기화(문제가 있는거 같음 테스트요망)
 >yum install chrony 이미 설치되있을꺼임
 >vi /etc/chrony.conf -> 서버풀변경 ntppool.org/zone/kr에서 확인
 >sudo systemctl start chronyd
@@ -344,3 +330,26 @@ mysqldump -u 사용자 -p비번 databse명 > $BACKUP_DIR/db_$DATE.sql
 >timedatectl set-ntp yes -> 싱크활성화
 >timedatectl status -> 동기화 확인
 >chronyc sources -> 기준서버 확인
+
+### cockpit 시스템 모니터링
+> sudo systemctl start cockpit  
+> sudo systemctl enable cockpit.socket  
+> 해당 아이피 :9090으로 접속 후 관리    
+
+### tomcat 로그 용량 관리
+> sudo vi /etc/logrotate.d/tomcat   
+``` 
+/opt/tomcat/logs/catalina.out {
+    copytruncate
+    compress
+    daily
+    rotate 60
+    missingok
+    notifempty
+    dateext
+}
+```
+> 실행테스트 sudo logrotate -f /etc/logrotate.d/tomcat  
+
+### 네트워크 이상 느려짐 등
+> NetworkManager 서비스 의심 중지 및 등록 삭제
