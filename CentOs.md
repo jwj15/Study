@@ -30,6 +30,12 @@
 >wheel그룹은 자동으로 등록되있지만 임의로 그룹에 사용자를 등록하면 설정해줘야한다.  
 >그룹은 앞에 %붙여서 등록  
 
+### ssh 포트 변경
+> ssh 포트는 변경하지 않으면 해킹의 위협이 크다 
+> sudo vi /etc/ssh/sshd_config  
+> Port XXX 추가 및 방화벽 포트 변경추가 
+> sshd 서비스 재시작;
+
 ### 고정아이피 등록 
 >vi /etc/sysconfig/network-scripts/ifcfg-eth0 // 뒤에 이름은 다를수 있다  
 >BOOTPROTO="static"  
@@ -351,5 +357,8 @@ mysqldump -u 사용자 -p비번 databse명 > $BACKUP_DIR/db_$DATE.sql
 ```
 > 실행테스트 sudo logrotate -f /etc/logrotate.d/tomcat  
 
-### 네트워크 이상 느려짐 등
-> NetworkManager 서비스 의심 중지 및 등록 삭제
+### 백신 설치
+> sudo yum install epel-release 
+> sudo yum install clamav clamav-update 
+> freshclam 업데이트실행    
+> clamscan -옵션
