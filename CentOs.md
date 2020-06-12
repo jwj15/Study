@@ -175,7 +175,7 @@ WantedBy=multi-user.target
 > firewall-cmd --permanent --new-zone=webserver // 새로운 존생성  
 > firewall-cmd --set-default-zone=webserver // webserver존 활성화  
 > firewall-cmd --permanent --add-forward-port=port=80:proto=tcp:toport=9000 // 포트포워딩
-> 설정파일 /etc/firewalld/znoes/public.xml
+> 설정파일 /etc/firewalld/zones/public.xml
 
 **\* 위 명령에서 해당 존에 설정을 컨트롤 하려면 permanent 이후에 --zone=public 와 같이 붙여준다(public존)**  
 > firewall-cmd --list-services --zone=public  -- 리스트 보기
@@ -361,4 +361,96 @@ mysqldump -u 사용자 -p비번 databse명 > $BACKUP_DIR/db_$DATE.sql
 > sudo yum install epel-release 
 > sudo yum install clamav clamav-update 
 > freshclam 업데이트실행    
-> clamscan -옵션
+> clamscan -옵션    
+
+### ip차단 첫번째 방법(현재 ipset오류 같음 개느림)
+> /iplist 폴더 생성
+> 폴더안에 wget http://www.ipdeny.com/ipblocks/data/countries/all-zones.tar.gz   
+> 오류시 --no-check-certificate 플래그 추가후 다운  
+> tar -vxzf all-zones.tar.gz    
+> firewall-cmd --permanent --new-ipset=blacklist --type=hash:net     
+>   --option=family=inet --option=hashsize=4096 --option=maxelem=200000    
+> firewall-cmd --permanent --ipset=blacklist --add-entries-from-file=/iplist/cn.zone    
+> 개별적으로 추가시 firewall-cmd --permanent --ipset=blacklist --add-entry=해당아이피
+> firewall-cmd --reload (오래걸림)
+> firewall-cmd --zone=public --add-rich-rule='rule source ipset=blacklist drop' 
+> 삭제시    
+> firewall-cmd --permanent --delete-ipset=blacklist 
+> firewall-cmd --permanent --zone=public --remove-rich-rule='rule source ipset=blacklist drop'  
+
+### ip차단 두번째 방법
+> https://www.maxmind.com/에서 GeoLite2 Country: CSV Format파일 받음    
+> GeoLite2-Country-Locations-en.csv, GeoLite2-Country-Blocks-IPv4파일을 복사해온다  
+```
+#!/bin/bash 
+
+#국가명 
+CONTRY="CN" 
+
+#geolite2 국가번호위치 
+LOCATION=~/GeoLite2-Country-Locations-en.csv 
+
+#geolite2 ipv4위치 
+DATA=~/GeoLite2-Country-Blocks-IPv4.csv 
+
+#firewall 수정할xml파일위치 
+FIREWALL=/etc/firewalld/zones/public.xml 
+
+#국가번호를 따서 code에 저장 
+CODE=`egrep ${CONTRY} ${LOCATION} | cut -d, -f1 | sed -e 's/"//g' | sed -e 's/,/-/g'` 
+
+#firewall xml파일 수정 스크립트 
+sed -i '/<\/zone>/d' ${FIREWALL} 
+for IPRANGE in `egrep "${CODE}" $DATA | cut -d, -f1 | sed -e 's/"//g' | sed -e 's/,/-/g'` 
+do 
+echo -e " <rule family=\"ipv4\"> 
+    <source address=\"${IPRANGE}\"/> 
+    <drop/> 
+  </rule>" >> ${FIREWALL} 
+done 
+echo -n "</zone>" >> ${FIREWALL}
+```
+> ipblock_CN.sh 위에 내용으로 스크립트 생성 
+> sudo sh ipblock_CN.sh 실행하면 public.xml에 ip룰 추가
+> firewall-cmd --reload(30초정도)   
+
+### fail2ban (로그인실패시 밴처리)
+> yum install fail2ban  
+> systemctl start fail2ban fail2ban-systemd 
+> cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local   
+> vi /etc/fail2ban/jail.local 수정  
+```
+# 차단하지 않을 IP
+ignoreip = 127.0.0.1/8
+
+# 시간동안 차단
+bantime  = 5000h
+
+# 입력한 시간 내에 허용횟수를 초과하여 실패시 차단하게 됩니다.
+findtime  = 1h
+
+# 최대 허용 횟수
+maxretry = 5
+
+# 메일 수신자, 다중 수신자는 지원 안 함 
+destemail = sysadmin@example.com
+
+# 메일 보낸 사람
+sender = fail2ban@my-server.com
+
+# 메일 전송 프로그램
+mta = sendmail
+
+# 차단시 whois 정보와 관련 로그를 첨부하여 메일 전송
+# whois사용시 yum install whois
+action = %(action_mwl)s
+# 알림메일 전송받지 않음
+#action = %(action_)s
+
+# sshd 서비스 차단
+[sshd]
+enabled = true
+port     = ssh, 2020
+```
+> 적용후 서비스 리스타트  
+> 상태확인 sudo fail2ban-client status    
