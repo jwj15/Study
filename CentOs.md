@@ -153,7 +153,7 @@ WantedBy=multi-user.target
 > systemctl start mariadb -- db 시작  
 > systemctl status httpd -- 서비스 상태 확인  
 > systemctl disable 서비스이름 // 서비스 자동시작 삭제  
-> systemctl list-units --type=service // 서비스 목록 보기
+> systemctl list-unit-files
 
 ### 아파치 php연동
 **\* vi /etc/httpd/conf/httpd.conf**  
@@ -275,7 +275,16 @@ WantedBy=multi-user.target
 sudo yum install MariaDB-server MariaDB-client
 
 **\* 설치후**
+```
 vi /etc/my.cnf
+[mysqld]
+log-error=/var/log/mysql/error.log
+log-warnings = 2
+
+저장 후 재실행
+해당 폴더가 없다면 만들고 mysql 사용자 및 그룹지정
+```
+
 설정 생략
 
 
@@ -342,7 +351,7 @@ mysqldump -u 사용자 -p비번 databse명 > $BACKUP_DIR/db_$DATE.sql
 > sudo systemctl enable cockpit.socket  
 > 해당 아이피 :9090으로 접속 후 관리    
 
-### tomcat 로그 용량 관리
+### 로그 용량 관리
 > sudo vi /etc/logrotate.d/tomcat   
 ``` 
 /opt/tomcat/logs/catalina.out {
@@ -356,6 +365,19 @@ mysqldump -u 사용자 -p비번 databse명 > $BACKUP_DIR/db_$DATE.sql
 }
 ```
 > 실행테스트 sudo logrotate -f /etc/logrotate.d/tomcat  
+> sudo vi /etc/logrotate.d/mysql-error
+```
+/var/log/mysql/error.log {
+    copytruncate
+    compress
+    create 644 mysql mysql
+    daily
+    rotate 60
+    missingok
+    notifempty
+    dateext
+}
+```
 
 ### 백신 설치
 > sudo yum install epel-release 
@@ -363,7 +385,7 @@ mysqldump -u 사용자 -p비번 databse명 > $BACKUP_DIR/db_$DATE.sql
 > freshclam 업데이트실행    
 > clamscan -옵션    
 
-### ip차단 첫번째 방법(현재 ipset오류 같음 개느림)
+### ip차단 첫번째 방법
 > /iplist 폴더 생성
 > 폴더안에 wget http://www.ipdeny.com/ipblocks/data/countries/all-zones.tar.gz   
 > 오류시 --no-check-certificate 플래그 추가후 다운  
@@ -372,8 +394,8 @@ mysqldump -u 사용자 -p비번 databse명 > $BACKUP_DIR/db_$DATE.sql
 >   --option=family=inet --option=hashsize=4096 --option=maxelem=200000    
 > firewall-cmd --permanent --ipset=blacklist --add-entries-from-file=/iplist/cn.zone    
 > 개별적으로 추가시 firewall-cmd --permanent --ipset=blacklist --add-entry=해당아이피
-> firewall-cmd --reload (오래걸림)
-> firewall-cmd --zone=public --add-rich-rule='rule source ipset=blacklist drop' 
+> firewall-cmd --reload
+> firewall-cmd --permanent --add-rich-rule='rule source ipset=blacklist drop' 
 > 삭제시    
 > firewall-cmd --permanent --delete-ipset=blacklist 
 > firewall-cmd --permanent --zone=public --remove-rich-rule='rule source ipset=blacklist drop'  
@@ -415,8 +437,8 @@ echo -n "</zone>" >> ${FIREWALL}
 > firewall-cmd --reload(30초정도)   
 
 ### fail2ban (로그인실패시 밴처리)
-> yum install fail2ban  
-> systemctl start fail2ban fail2ban-systemd 
+> yum install fail2ban fail2ban-systemd 
+> systemctl start fail2ban  
 > cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local   
 > vi /etc/fail2ban/jail.local 수정  
 ```
@@ -447,10 +469,23 @@ action = %(action_mwl)s
 # 알림메일 전송받지 않음
 #action = %(action_)s
 
+# 밴처리 등록
+banaction = firewallcmd-multiport
+banaction = firewallcmd=allports
+
 # sshd 서비스 차단
 [sshd]
 enabled = true
-port     = ssh, 2020
+port     = ssh, 2020 
+# 포트를 2개 이상 사용하면 제대로 등록되지 않는다
+
+[mysqld-auth]
+port = 3306
+logpath = /var/log/mysql/error.log
+backend = polling
+enabled = true
 ```
 > 적용후 서비스 리스타트  
-> 상태확인 sudo fail2ban-client status    
+> 상태확인 sudo fail2ban-client status  
+> 밴해제 sudo fail2ban-client unban 해당 아이파 혹은 --all  
+> 밴등록 제대로 적용됬는데 확인 sudo iptables -nL 
