@@ -237,7 +237,7 @@ WantedBy=multi-user.target
 
 -----------------------------------------------------------
 
-### user role 추가
+### user role 추가(안쓰면할필요x)
 **\* vi conf/tomcat-users.xml**
 
 -----------------------------------------------------------
@@ -256,6 +256,38 @@ WantedBy=multi-user.target
 > sudo systemctl daemon-reload  
 > sudo systemctl enable tomcat  
 > sudo systemctl start tomcat  
+
+### web.xml 수정
+> 에러페이지 컨트롤 
+```
+<error-page>
+    <error-code>400</error-code>
+    <location>/WEB-INF/jsp/error/404.jsp</location>
+</error-page>
+<error-page>
+    <error-code>403</error-code>
+    <location>/WEB-INF/jsp/error/404.jsp</location>
+</error-page>
+<error-page>
+    <error-code>404</error-code>
+    <location>/WEB-INF/jsp/error/404.jsp</location>
+</error-page>
+<error-page>
+    <error-code>500</error-code>
+    <location>/WEB-INF/jsp/error/404.jsp</location>
+</error-page>
+<error-page>
+    <exception-type>java.lang.Throwable</exception-type>
+    <location>/WEB-INF/jsp/error/error.jsp</location>
+</error-page>
+```
+
+> 세션 만료 수정   
+``` 
+<session-config>
+    <session-timeout>30</session-timeout>
+</session-config>
+```
 
 ### 마리아디비 설치
 **\* vi /etc/yum.repos.d/MariaDB.repo**
