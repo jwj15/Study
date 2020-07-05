@@ -17,6 +17,8 @@
 >`:w` 저장  
 >`:set number` 줄번호 달기  
 >`/문자열` 해당문자열 찾기(커서이후로)  
+> `gg` 처음으로 
+> `shift + g` 마지막으로    
 
 ### 초기 업데이트 
 >yum update or upgrade
@@ -98,7 +100,7 @@ WantedBy=multi-user.target
 
 ### 사용자 및 그룹관리
 > `사용자`: /etc/passwd     `그룹`: /etc/group  
-> useradd 사용자 -- 사용자 추가 // -u 1111 --사용자아이디1111 // -g 그룹1 -- 그룹1에 포함(그룹1존재해야함) // -d /newhome -- 홈디텍토리 /newhome으로  
+> useradd 사용자 -- 사용자 추가 // -U 1111 --사용자아이디1111 // -g 그룹1 -- 그룹1에 포함(그룹1존재해야함) // -d /newhome -- 홈디텍토리 /newhome으로  
 > passwd 계정  -- 암호변경  
 > usermod -- 사용자 속성 변경 옵션은 useradd와 동일  
 > userdel  -- 사용자 삭제 // -r 홈디렉토리까지 삭제  
