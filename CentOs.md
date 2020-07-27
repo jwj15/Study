@@ -4,7 +4,7 @@
 >재시작후 한국어(Hangul)로 입력소스 교체
 
 ### selinux 해제
->sudo gedit /etc/sysconfig/selinux (gedit <-> vi)  
+>sudo vi /etc/sysconfig/selinux (gedit <-> vi)  
 >SELINUX=enforcing ==> disabled 로 수정후 재부팅
 
 ### vi 사용법
@@ -196,8 +196,7 @@ WantedBy=multi-user.target
 > tar xvzpf 파일이름  
 > sudo mv 풀린폴더이름 /opt  
 > cd /opt; mv 풀린폴더 tomcat  
-> sudo useradd tomcat  
-> sudo groupadd tomcat  
+> sudo useradd tomcat  (그룹자동생성)
 > sudo chown -R tomcat:tomcat /opt/tomcat  
 
 **\* 권한설정 제대로 안되면 서비스 실행 안됨**  
@@ -250,11 +249,11 @@ WantedBy=multi-user.target
 > \<user username="아이디" password="비번"   
 > roles="manager-gui,manager-script,manager-status,admin-gui"/>  
 > 
+> /opt/tomcat/webapps/manager/META-INF/context.xml  
+> /opt/tomcat/webapps/host-manager/META-INF/context.xml  
+> 두 파일에서 \<value allow="^.*$"/> 다른거 삭제하지말고 allow 값만 변경  
 -----------------------------------------------------------
 
-> /opt/tomcat/webapps/manager/META-INF/context.xml  
-> /opt/tomcat/webapps/host-manager/META-INF/context/xml  
-> 두 파일에서 \<value allow="^.*$/> 다른거 삭제하지말고 allow 값만 변경  
 > sudo systemctl daemon-reload  
 > sudo systemctl enable tomcat  
 > sudo systemctl start tomcat  
@@ -306,6 +305,7 @@ WantedBy=multi-user.target
 ------------------------------------------------------
 
 **\* 저장 후 설치**  
+sudo yum clean all  
 sudo yum install MariaDB-server MariaDB-client
 
 **\* 설치후**
@@ -314,6 +314,13 @@ vi /etc/my.cnf
 [mysqld]
 log-error=/var/log/mysql/error.log
 log-warnings = 2
+character_set_server = utf8
+
+[mysqldump]
+default-character-set=utf8
+
+[mysql]
+default-character-set=utf8
 
 저장 후 재실행
 해당 폴더가 없다면 만들고 mysql 사용자 및 그룹지정
@@ -471,7 +478,7 @@ echo -n "</zone>" >> ${FIREWALL}
 > firewall-cmd --reload(30초정도)   
 
 ### fail2ban (로그인실패시 밴처리)
-> yum install fail2ban fail2ban-systemd 
+> yum install fail2ban fail2ban-systemd  
 > systemctl start fail2ban  
 > cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local   
 > vi /etc/fail2ban/jail.local 수정  
@@ -504,8 +511,13 @@ action = %(action_mwl)s
 #action = %(action_)s
 
 # 밴처리 등록
+- firewalld 사용시
 banaction = firewallcmd-multiport
-banaction = firewallcmd=allports
+banaction_allports = firewallcmd=allports
+- iptables 사용시
+banaction = iptables-multiport
+banaction_allports = firewallcmd=allports
+** 모든 포트 차단시 위아래 전부 올포트로 설정하면된다.
 
 # sshd 서비스 차단
 [sshd]
