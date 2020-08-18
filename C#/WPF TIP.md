@@ -33,3 +33,6 @@ TemplateBinding이 더 가볍지만 TwoWay지원X, Freezable클래스 속성(bru
 ### foreach 문제
 - 컬렉션에 foreach사용 할 경우 수정,삭제 시 오류 발생  
 이런 경우 for문을 사용하면 된다.
+### UI스레드 접근 문제
+ - 다른 스레드를 사용하면 (async 메소드 같은) UI스레드로 접근 불가  
+  Dispatcher.Invoke(() => {여기에 코드입력}); 사용하여 UI에 접근가능

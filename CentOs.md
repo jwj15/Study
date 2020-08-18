@@ -535,3 +535,30 @@ enabled = true
 > 상태확인 sudo fail2ban-client status  
 > 밴해제 sudo fail2ban-client unban 해당 아이파 혹은 --all  
 > 밴등록 제대로 적용됬는데 확인 sudo iptables -nL 
+
+### Docker 사용하기
+> sudo yum config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo    
+> sudo yum list docker-ce --showduplicates | sort -r    
+> repo등록은 생략해도 될듯    
+> 20.08.11 현재 centos8은 오류 뜰텐데 --nobest옵션 붙여주고 설치 
+> sudo yum install docker-ce    
+> docker 서비스 등록 및 시작    
+> docker -v 혹인 docker version 입력해서 확인   
+> docker사용시 sudo 권한 필요 sudo usermod -aG docker $USER 사용자를 추가해줘도 됨 
+> 추후 계속 ... 
+
+### postfix 사용 (연동실패)
+> sudo yum install postfix mailx cyrus-sasl 
+> sudo yum remove sendmail  
+> sudo vi /etc/postfix/main.cf
+```
+relayhost = [smtp.gmail.com]:587
+smtp_use_tls = yes 
+smtp_sasl_auth_enable = yes 
+smtp_sasl_security_options = noanonymous 
+#smtp_tls_CAfile = /etc/ssl/certs/ca-bundle.crt
+smtp_sasl_password_maps = hash:/etc/postfix/gmail
+```
+> sudo alternatives --config mta  // mta 변경   
+> mailq // 메일 큐 확인 
+> postsuper -d ALL or postsuper -d ALL deferred // 메일큐비우기 
