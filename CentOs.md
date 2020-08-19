@@ -562,4 +562,3 @@ smtp_sasl_password_maps = hash:/etc/postfix/gmail
 > sudo alternatives --config mta  // mta 변경   
 > mailq // 메일 큐 확인 
 > postsuper -d ALL or postsuper -d ALL deferred // 메일큐비우기 
-> ss
