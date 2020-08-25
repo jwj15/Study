@@ -248,7 +248,8 @@ WantedBy=multi-user.target
 > \<role rolename="admin-gui"/>  
 > \<user username="아이디" password="비번"   
 > roles="manager-gui,manager-script,manager-status,admin-gui"/>  
-> 
+
+> 아래는 적용안해도 되는듯하다
 > /opt/tomcat/webapps/manager/META-INF/context.xml  
 > /opt/tomcat/webapps/host-manager/META-INF/context.xml  
 > 두 파일에서 \<value allow="^.*$"/> 다른거 삭제하지말고 allow 값만 변경  
@@ -516,7 +517,7 @@ banaction = firewallcmd-multiport
 banaction_allports = firewallcmd=allports
 - iptables 사용시
 banaction = iptables-multiport
-banaction_allports = firewallcmd=allports
+banaction_allports = iptables=allports
 ** 모든 포트 차단시 위아래 전부 올포트로 설정하면된다.
 
 # sshd 서비스 차단
@@ -562,3 +563,51 @@ smtp_sasl_password_maps = hash:/etc/postfix/gmail
 > sudo alternatives --config mta  // mta 변경   
 > mailq // 메일 큐 확인 
 > postsuper -d ALL or postsuper -d ALL deferred // 메일큐비우기 
+
+### https 적용하기
+> sudo dnf install certbot  
+> sudo certbot certonly --standalone -d 도메인    
+> 80 , 443(?) 포트열어줘야 인증가능함   
+> /etc/letsencrypt/live/도메인/chain.pem  
+> /etc/letsencrypt/live/도메인/privkey.pem  
+> /etc/letsencrypt/live/도메인/cert.pem 
+> 상태확인 certbot certificates 
+> 갱신 certbot renew    
+> sudo certbot revoke --cert-path /etc/letsencrypt/archive/도메인/cert1.pem 폐기
+> tomcat conf/server.xml 설정   
+```
+    <Connector port="8080" protocol="HTTP/1.1"
+               URIEncoding="UTF-8"
+               connectionTimeout="20000"
+               redirectPort="443" />
+
+    <Connector port="8443"
+               protocol="org.apache.coyote.http11.Http11NioProtocol"
+               maxThreads="150"
+               SSLEnabled="true"
+               URIEncoding="UTF-8">
+        <UpgradeProtocol className="org.apache.coyote.http2.Http2Protocol" />
+        <SSLHostConfig>
+            <Certificate certificateKeyFile="/etc/letsencrypt/live/도메인/privkey.pem"
+                         certificateFile="/etc/letsencrypt/live/도메인/cert.pem"
+                         certificateChainFile="/etc/letsencrypt/live/도메인/chain.pem"
+                         type="RSA" />
+        </SSLHostConfig>
+    </Connector>
+```
+> sudo chmod 755 /etc/letsencrypt/live  
+> sudo chmod 755 -R /etc/letsencrypt/archive (이건 확인요망)    
+> tomcat conf/web.xml 리다이렉트 설정   
+```
+    <security-constraint>
+      <web-resource-collection>
+        <web-resource-name>SSL Forward</web-resource-name>
+        <url-pattern>/*</url-pattern>
+      </web-resource-collection>
+      <user-data-constraint>
+        <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+      </user-data-constraint>
+    </security-constraint>
+```
+> 톰캣 재시작 후 접속 테스트    
+> 3개월 만료이므로 갱신 등록해야함 1개월전부터 가능하므로 나중에 테스트 
