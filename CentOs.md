@@ -611,3 +611,4 @@ smtp_sasl_password_maps = hash:/etc/postfix/gmail
 ```
 > 톰캣 재시작 후 접속 테스트    
 > 3개월 만료이므로 갱신 등록해야함 1개월전부터 가능하므로 나중에 테스트 
+> 
