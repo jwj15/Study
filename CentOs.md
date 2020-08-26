@@ -363,6 +363,12 @@ find  $BACKUP_DIR/ -mtime +90 -name '*.sql' -exec rm {} \;
 
 # 백업 진행
 mysqldump -u 사용자 -p비번 databse명 > $BACKUP_DIR/db_$DATE.sql
+
+#DB여러개
+mysqldump -u 사용자 -p비번 --databses db1 db2 > $BACKUP_DIR/db_$DATE.sql
+
+#원격백업
+mysqldump -u 사용자 -p비번 -h ip주소 -P 포트넘버 --databses db1 db2 > $BACKUP_DIR/db_$DATE.sql
 ```
 >chmod 755 /usr/local/bin/dbbackup.sh 권한변경
 >crontab -e  ---->  00 12 * * * /usr/local/bin/dbbackup.sh 저장, 12시마다 스크립트 실행
