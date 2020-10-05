@@ -128,7 +128,7 @@ WantedBy=multi-user.target
 > rpm -qi 패키지이름 -- 설치된 패키지 상세정보  
 > rpm -qlp 패키지이름.rpm -- 패키지파일 안에 포함된 파일 확인  
 > rpm -qip 패키지이름.rpm -- 패키지 파일 상세정보  
-  
+
 **\* yum은 rpm 명령의 의존성 문제를 해결**  
 > yum -y install 패키지이름 -- 패키지 설치 -y옵션은 질의시 무조건 yes  
 > yum localinstall rmp파일.rpm -- 의존성 파일은 인터넷에서 알아서 받음(rpm 대신 쓰자)  
@@ -147,7 +147,7 @@ WantedBy=multi-user.target
 > rpm -Uvh remi-release-7.rpm  
 > yum install -y yum-utils  
 > yum-config-manager --enable remi-php72  
-  
+
 > yum install httpd php mariadb php-mysql -- 설치  
 > systemctl enable httpd -- 부팅시 자동시작  
 > systemctl enable mariadb -- db 서비스 등록  
@@ -336,7 +336,7 @@ default-character-set=utf8
 > sudo systemctl start mariadb  
 > firewall-cmd --permanent --zone=public --add-service=mysql (3306포트)  
 > sudo firewall-cmd --reload  
-  
+
 > mysql_upgrade -u root // 아래 명령 실행시 db존재하지 않느다는 오류시 사용  
 > sudo mysql_secure_installation // 보안설정 암호외에 전부다 엔터  
 
@@ -362,13 +362,13 @@ BACKUP_DIR=~/dbbackup
 find  $BACKUP_DIR/ -mtime +90 -name '*.sql' -exec rm {} \;
 
 # 백업 진행
-mysqldump -u 사용자 -p비번 databse명 > $BACKUP_DIR/db_$DATE.sql
+mysqldump -u 사용자 -p비번 database명 > $BACKUP_DIR/db_$DATE.sql
 
 #DB여러개
-mysqldump -u 사용자 -p비번 --databses db1 db2 > $BACKUP_DIR/db_$DATE.sql
+mysqldump -u 사용자 -p비번 --databases db1 db2 > $BACKUP_DIR/db_$DATE.sql
 
 #원격백업
-mysqldump -u 사용자 -p비번 -h ip주소 -P 포트넘버 --databses db1 db2 > $BACKUP_DIR/db_$DATE.sql
+mysqldump -u 사용자 -p비번 -h ip주소 -P 포트넘버 --databases db1 db2 > $BACKUP_DIR/db_$DATE.sql
 ```
 >chmod 755 /usr/local/bin/dbbackup.sh 권한변경
 >crontab -e  ---->  00 12 * * * /usr/local/bin/dbbackup.sh 저장, 12시마다 스크립트 실행
@@ -572,7 +572,9 @@ smtp_sasl_password_maps = hash:/etc/postfix/gmail
 
 ### https 적용하기
 > sudo dnf install certbot  
-> sudo certbot certonly --standalone -d 도메인    
+> sudo certbot certonly --standalone -d 도메인  
+> certbot certonly --manual -d  *.도메인 -d 도메인 --preferred-challenges dns-01 
+> --server https://acme-v02.api.letsencrypt.org/directory // 와일드 카드적용	
 > 80 , 443(?) 포트열어줘야 인증가능함   
 > /etc/letsencrypt/live/도메인/chain.pem  
 > /etc/letsencrypt/live/도메인/privkey.pem  
@@ -602,7 +604,7 @@ smtp_sasl_password_maps = hash:/etc/postfix/gmail
     </Connector>
 ```
 > sudo chmod 755 /etc/letsencrypt/live  
-> sudo chmod 755 -R /etc/letsencrypt/archive (이건 확인요망)    
+> sudo chmod 755 -R /etc/letsencrypt/archive   
 > tomcat conf/web.xml 리다이렉트 설정   
 ```
     <security-constraint>
@@ -614,7 +616,19 @@ smtp_sasl_password_maps = hash:/etc/postfix/gmail
         <transport-guarantee>CONFIDENTIAL</transport-guarantee>
       </user-data-constraint>
     </security-constraint>
+    
+    <!-- 특정 url패턴은 http동시 사용가능
+    <security-constraint>
+      <web-resource-collection>
+        <web-resource-name>HTTPS or HTTP</web-resource-name>
+        <url-pattern>/images/*</url-pattern>
+        <url-pattern>/css/*</url-pattern>
+      </web-resource-collection>
+      <user-data-constraint>
+        <transport-guarantee>NONE</transport-guarantee>
+      </user-data-constraint>
+	</security-constraint>
+    -->
 ```
 > 톰캣 재시작 후 접속 테스트    
 > 3개월 만료이므로 갱신 등록해야함 1개월전부터 가능하므로 나중에 테스트 
-> 
