@@ -261,6 +261,8 @@ WantedBy=multi-user.target
 
 ### web.xml 수정
 > 에러페이지 컨트롤 
+> 스프링부트에서 적용되는 errorcontroller가 톰캣에서는 web.xml에서 처리됨
+> 같은 방향으로 처리하기 위해 /error로 보냄
 ```
 <error-page>
     <error-code>400</error-code>
@@ -632,3 +634,12 @@ smtp_sasl_password_maps = hash:/etc/postfix/gmail
 ```
 > 톰캣 재시작 후 접속 테스트    
 > 3개월 만료이므로 갱신 등록해야함 1개월전부터 가능하므로 나중에 테스트 
+
+### 톰캣서버 argument 추가
+> 톰캣폴더/bin/setenv.sh
+```
+#!/bin/sh
+export JAVA_OPTS="$JAVA_OPTS\
+ --add-opens java.base/jdk.internal.misc=ALL-UNNAMED\
+ -Dio.netty.tryReflectionSetAccessible=true"
+```
