@@ -644,4 +644,15 @@ export JAVA_OPTS="$JAVA_OPTS\
  -Dio.netty.tryReflectionSetAccessible=true"
 ```
 
-...
+### OS설치시 nvme 오류해결
+> 부팅전 quiet 뒤에 nvme_core.default_ps_max_latency_us=5500 추가후 Ctrl+x	
+> 설치 후 sudo vi /etc/default/grub	
+> GRUB_CMDLINE_LINUX 가장뒤에 위변수 추가 후 저장	
+> sudo grub2-mkconfig -o /boot/grub2/grub.cfg	
+> 재부팅후 cat /sys/module/nvme_core/parameters/default_ps_max_latency_us 확인	
+
+### 노트북 랜카드 설치관련
+
+> rtl8821ce 무선랜이 잡히지 않아서 관련 드라이브를 설치해야한다
+>
+> https://github.com/lwfinger/rtw88 참고
