@@ -81,7 +81,13 @@ WantedBy=multi-user.target
 
 ### name server 추가
 >vi /etc/resolv.conf  
->nameserver 168.126.63.1      (kt)
+>nameserver 168.126.63.1      (kt)	
+>nameserver 8.8.8.8 (구글)	
+>nameserver 1.1.1.1 (cloudflare)	
+>변경후 sudo vi /etc/NetworkManager/NetworkManager.conf	
+>[main] 하단에 dns=none 입력	
+>sudo systemctl restart NetworkManager	
+>resolvectl status 확인	
 
 ### 명령어 모음
 > `ls` ==> dir명령 `-a` ==> 숨김파일포함 `-l` ==> 자세히출력  
@@ -128,7 +134,7 @@ WantedBy=multi-user.target
 > rpm -qi 패키지이름 -- 설치된 패키지 상세정보  
 > rpm -qlp 패키지이름.rpm -- 패키지파일 안에 포함된 파일 확인  
 > rpm -qip 패키지이름.rpm -- 패키지 파일 상세정보  
-  
+
 **\* yum은 rpm 명령의 의존성 문제를 해결**  
 > yum -y install 패키지이름 -- 패키지 설치 -y옵션은 질의시 무조건 yes  
 > yum localinstall rmp파일.rpm -- 의존성 파일은 인터넷에서 알아서 받음(rpm 대신 쓰자)  
@@ -147,7 +153,7 @@ WantedBy=multi-user.target
 > rpm -Uvh remi-release-7.rpm  
 > yum install -y yum-utils  
 > yum-config-manager --enable remi-php72  
-  
+
 > yum install httpd php mariadb php-mysql -- 설치  
 > systemctl enable httpd -- 부팅시 자동시작  
 > systemctl enable mariadb -- db 서비스 등록  
@@ -226,7 +232,7 @@ WantedBy=multi-user.target
 > Environment=CATALINA_BASE=/opt/tomcat  
 > Environment=CATALINA_PID=/opt/tomcat/temp/tomcat.pid  
 > ExecStart=/opt/tomcat/bin/startup.sh  
-> ExecStop=/opt/tomcat/bin/shutdown.sh  
+> ExecStop=/opt/tomcat/bin/shutdown.sh  녀애 
 >   
 > User=tomcat  
 > Group=tomcat  
@@ -261,6 +267,8 @@ WantedBy=multi-user.target
 
 ### web.xml 수정
 > 에러페이지 컨트롤 
+> 스프링부트에서 적용되는 errorcontroller가 톰캣에서는 web.xml에서 처리됨
+> 같은 방향으로 처리하기 위해 /error로 보냄
 ```
 <error-page>
     <error-code>400</error-code>
@@ -324,11 +332,10 @@ default-character-set=utf8
 default-character-set=utf8
 
 저장 후 재실행
-해당 폴더가 없다면 만들고 mysql 사용자 및 그룹지정
+로그경로 해당 폴더가 없다면 만들고 mysql 사용자 및 그룹지정
 ```
 
 설정 생략
-
 
 **\* 저장후**
 
@@ -336,13 +343,14 @@ default-character-set=utf8
 > sudo systemctl start mariadb  
 > firewall-cmd --permanent --zone=public --add-service=mysql (3306포트)  
 > sudo firewall-cmd --reload  
-  
+
 > mysql_upgrade -u root // 아래 명령 실행시 db존재하지 않느다는 오류시 사용  
 > sudo mysql_secure_installation // 보안설정 암호외에 전부다 엔터  
 
 **\* 계정생성**
+
 > create user '아이디'@'%' identified by '비밀번호';  
-> grant all privileges on *.* to '아이디'@'%';  
+> grant all privileges on \*.\* to '아이디'@'%';  
 > flush privileges;  
 
 ### PowerOff Button으로 전원오프
@@ -362,13 +370,13 @@ BACKUP_DIR=~/dbbackup
 find  $BACKUP_DIR/ -mtime +90 -name '*.sql' -exec rm {} \;
 
 # 백업 진행
-mysqldump -u 사용자 -p비번 databse명 > $BACKUP_DIR/db_$DATE.sql
+mysqldump -u 사용자 -p비번 database명 > $BACKUP_DIR/db_$DATE.sql
 
 #DB여러개
-mysqldump -u 사용자 -p비번 --databses db1 db2 > $BACKUP_DIR/db_$DATE.sql
+mysqldump -u 사용자 -p비번 --databases db1 db2 > $BACKUP_DIR/db_$DATE.sql
 
 #원격백업
-mysqldump -u 사용자 -p비번 -h ip주소 -P 포트넘버 --databses db1 db2 > $BACKUP_DIR/db_$DATE.sql
+mysqldump -u 사용자 -p비번 -h ip주소 -P 포트넘버 --databases db1 db2 > $BACKUP_DIR/db_$DATE.sql
 ```
 >chmod 755 /usr/local/bin/dbbackup.sh 권한변경
 >crontab -e  ---->  00 12 * * * /usr/local/bin/dbbackup.sh 저장, 12시마다 스크립트 실행
@@ -485,8 +493,9 @@ echo -n "</zone>" >> ${FIREWALL}
 > firewall-cmd --reload(30초정도)   
 
 ### fail2ban (로그인실패시 밴처리)
-> yum install fail2ban fail2ban-systemd  
-> systemctl start fail2ban  
+> yum install fail2ban fail2ban-systemd	
+> systemctl enable fail2ban  
+> systemctl start fail2ban
 > cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local   
 > vi /etc/fail2ban/jail.local 수정  
 ```
@@ -572,8 +581,12 @@ smtp_sasl_password_maps = hash:/etc/postfix/gmail
 
 ### https 적용하기
 > sudo dnf install certbot  
-> sudo certbot certonly --standalone -d 도메인    
+> sudo certbot certonly --standalone -d 도메인  
+> certbot certonly --manual -d  *.도메인 -d 도메인 --preferred-challenges dns-01 
+> --server https://acme-v02.api.letsencrypt.org/directory // 와일드 카드적용	
 > 80 , 443(?) 포트열어줘야 인증가능함   
+> 안내에 따라 TXT추가 적용 시간 고려 10분정도 후에 시도	
+> cmd -> nslookup -type=txt -> 해당 도메인 입력하면 txt확인	
 > /etc/letsencrypt/live/도메인/chain.pem  
 > /etc/letsencrypt/live/도메인/privkey.pem  
 > /etc/letsencrypt/live/도메인/cert.pem 
@@ -602,7 +615,7 @@ smtp_sasl_password_maps = hash:/etc/postfix/gmail
     </Connector>
 ```
 > sudo chmod 755 /etc/letsencrypt/live  
-> sudo chmod 755 -R /etc/letsencrypt/archive (이건 확인요망)    
+> sudo chmod 755 -R /etc/letsencrypt/archive   
 > tomcat conf/web.xml 리다이렉트 설정   
 ```
     <security-constraint>
@@ -614,7 +627,41 @@ smtp_sasl_password_maps = hash:/etc/postfix/gmail
         <transport-guarantee>CONFIDENTIAL</transport-guarantee>
       </user-data-constraint>
     </security-constraint>
+    
+    <!-- 특정 url패턴은 http동시 사용가능
+    <security-constraint>
+      <web-resource-collection>
+        <web-resource-name>HTTPS or HTTP</web-resource-name>
+        <url-pattern>/images/*</url-pattern>
+        <url-pattern>/css/*</url-pattern>
+      </web-resource-collection>
+      <user-data-constraint>
+        <transport-guarantee>NONE</transport-guarantee>
+      </user-data-constraint>
+	</security-constraint>
+    -->
 ```
 > 톰캣 재시작 후 접속 테스트    
 > 3개월 만료이므로 갱신 등록해야함 1개월전부터 가능하므로 나중에 테스트 
-> 
+
+### 톰캣서버 argument 추가
+> 톰캣폴더/bin/setenv.sh
+```
+#!/bin/sh
+export JAVA_OPTS="$JAVA_OPTS\
+ --add-opens java.base/jdk.internal.misc=ALL-UNNAMED\
+ -Dio.netty.tryReflectionSetAccessible=true"
+```
+
+### OS설치시 nvme 오류해결
+> 부팅전 quiet 뒤에 nvme_core.default_ps_max_latency_us=5500 추가후 Ctrl+x	
+> 설치 후 sudo vi /etc/default/grub	
+> GRUB_CMDLINE_LINUX 가장뒤에 위변수 추가 후 저장	
+> sudo grub2-mkconfig -o /boot/grub2/grub.cfg	
+> 재부팅후 cat /sys/module/nvme_core/parameters/default_ps_max_latency_us 확인	
+
+### 노트북 랜카드 설치관련
+
+> rtl8821ce 무선랜이 잡히지 않아서 관련 드라이브를 설치해야한다
+>
+> https://github.com/lwfinger/rtw88 참고
