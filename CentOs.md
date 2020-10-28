@@ -81,7 +81,13 @@ WantedBy=multi-user.target
 
 ### name server 추가
 >vi /etc/resolv.conf  
->nameserver 168.126.63.1      (kt)
+>nameserver 168.126.63.1      (kt)	
+>nameserver 8.8.8.8 (구글)	
+>nameserver 1.1.1.1 (cloudflare)	
+>변경후 sudo vi /etc/NetworkManager/NetworkManager.conf	
+>[main] 하단에 dns=none 입력	
+>sudo systemctl restart NetworkManager	
+>resolvectl status 확인	
 
 ### 명령어 모음
 > `ls` ==> dir명령 `-a` ==> 숨김파일포함 `-l` ==> 자세히출력  
@@ -226,7 +232,7 @@ WantedBy=multi-user.target
 > Environment=CATALINA_BASE=/opt/tomcat  
 > Environment=CATALINA_PID=/opt/tomcat/temp/tomcat.pid  
 > ExecStart=/opt/tomcat/bin/startup.sh  
-> ExecStop=/opt/tomcat/bin/shutdown.sh  
+> ExecStop=/opt/tomcat/bin/shutdown.sh  녀애 
 >   
 > User=tomcat  
 > Group=tomcat  
@@ -326,11 +332,10 @@ default-character-set=utf8
 default-character-set=utf8
 
 저장 후 재실행
-해당 폴더가 없다면 만들고 mysql 사용자 및 그룹지정
+로그경로 해당 폴더가 없다면 만들고 mysql 사용자 및 그룹지정
 ```
 
 설정 생략
-
 
 **\* 저장후**
 
@@ -343,8 +348,9 @@ default-character-set=utf8
 > sudo mysql_secure_installation // 보안설정 암호외에 전부다 엔터  
 
 **\* 계정생성**
+
 > create user '아이디'@'%' identified by '비밀번호';  
-> grant all privileges on *.* to '아이디'@'%';  
+> grant all privileges on \*.\* to '아이디'@'%';  
 > flush privileges;  
 
 ### PowerOff Button으로 전원오프
@@ -487,8 +493,9 @@ echo -n "</zone>" >> ${FIREWALL}
 > firewall-cmd --reload(30초정도)   
 
 ### fail2ban (로그인실패시 밴처리)
-> yum install fail2ban fail2ban-systemd  
-> systemctl start fail2ban  
+> yum install fail2ban fail2ban-systemd	
+> systemctl enable fail2ban  
+> systemctl start fail2ban
 > cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local   
 > vi /etc/fail2ban/jail.local 수정  
 ```
@@ -578,6 +585,8 @@ smtp_sasl_password_maps = hash:/etc/postfix/gmail
 > certbot certonly --manual -d  *.도메인 -d 도메인 --preferred-challenges dns-01 
 > --server https://acme-v02.api.letsencrypt.org/directory // 와일드 카드적용	
 > 80 , 443(?) 포트열어줘야 인증가능함   
+> 안내에 따라 TXT추가 적용 시간 고려 10분정도 후에 시도	
+> cmd -> nslookup -type=txt -> 해당 도메인 입력하면 txt확인	
 > /etc/letsencrypt/live/도메인/chain.pem  
 > /etc/letsencrypt/live/도메인/privkey.pem  
 > /etc/letsencrypt/live/도메인/cert.pem 
