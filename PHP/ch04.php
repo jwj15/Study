@@ -52,5 +52,5 @@ while ($fgets = fgets($fopen, filesize("/test/script.txt"))) {
     echo $fgets . br;
 }
 # 소스 보여주기
-highlight_file("ch01.php");
+highlight_file("ch01.php"); //show_source() 이건 옛날꺼
 ?>
